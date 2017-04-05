@@ -3,7 +3,7 @@
 Connecting to Oracle
 --------------------
 
-Set up for windows:
+# Set up for windows:
 1. Install Go 32 bit version
 
 2. Install Oracle instant client 32bit version(http://www.oracle.com/technetwork/topics/winsoft-085727.html)
