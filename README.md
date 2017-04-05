@@ -41,7 +41,7 @@ Set up for windows:
     
     Set PKG_CONFIG_PATH environemnt variable to C:\pkg-config\config
     
-    ###oci8.pc file
+    ### oci8.pc file
     
     ```
     libdir=C:/instantclient_12_2_32/sdk/lib/msvc
