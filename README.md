@@ -43,8 +43,6 @@ Set up for windows:
     
     oci8.pc file
     
-    prefix=/devel/target/XXXXXXXXXXXXXXXXXXXXXXXXXX
-    exec_prefix=${prefix}
     libdir=C:/instantclient_12_2_32/sdk/lib/msvc
     includedir=C:/instantclient_12_2_32/sdk/include
 
