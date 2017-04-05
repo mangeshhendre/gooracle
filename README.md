@@ -33,5 +33,25 @@ Set up for windows:
     Copy C:\pkg-config\gettext-runtime_0.18.1.1-2_win32\bin\intl.dll to C:\pkg-config\pkg-config_0.26-1_win32\bin
     
     Add C:\pkg-config\pkg-config_0.26-1_win32\bin to the path environment variable
+   
+ 5. Create the oci8.pc file
+    Add the oci8.pc file to C:\pkg-config\config
+    Set PKG_CONFIG_PATH environemnt variable to C:\pkg-config\config
+    
+    oci8.pc file
+    prefix=/devel/target/XXXXXXXXXXXXXXXXXXXXXXXXXX
+    exec_prefix=${prefix}
+    libdir=C:/instantclient_12_2_32/sdk/lib/msvc
+    includedir=C:/instantclient_12_2_32/sdk/include
+
+    glib_genmarshal=glib-genmarshal
+    gobject_query=gobject-query
+    glib_mkenums=glib-mkenums
+
+    Name: oci8
+    Description: oci8 library
+    Libs: -L${libdir} -loci
+    Cflags: -I${includedir}
+    Version: 12.2
 
 !!!! Need to complete the full description of setup !!!!
