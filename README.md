@@ -1,5 +1,8 @@
 # gooracle
 
+Connecting to Oracle
+--------------------
+
 Set up for windows:
 1. Install Go 32 bit version
 
@@ -57,7 +60,10 @@ Set up for windows:
     Cflags: -I${includedir}
     Version: 12.2
     ```
-    
+Install Oracle Driver
+---------------------
+    go get github.com/mattn/go-oci8
+        
     
 
 !!!! Need to complete the full description of setup !!!!
