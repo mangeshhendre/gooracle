@@ -2,6 +2,7 @@
 
 Set up for windows:
 1. Install Go 32 bit version
+
 2. Install Oracle instant client 32bit version(http://www.oracle.com/technetwork/topics/winsoft-085727.html)
 
     Create folder C:\instantclient_12_2_32
@@ -35,10 +36,13 @@ Set up for windows:
     Add C:\pkg-config\pkg-config_0.26-1_win32\bin to the path environment variable
    
  5. Create the oci8.pc file
+ 
     Add the oci8.pc file to C:\pkg-config\config
+    
     Set PKG_CONFIG_PATH environemnt variable to C:\pkg-config\config
     
     oci8.pc file
+    
     prefix=/devel/target/XXXXXXXXXXXXXXXXXXXXXXXXXX
     exec_prefix=${prefix}
     libdir=C:/instantclient_12_2_32/sdk/lib/msvc
