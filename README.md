@@ -44,16 +44,25 @@ Set up for windows:
     oci8.pc file
     
     libdir=C:/instantclient_12_2_32/sdk/lib/msvc
+    
     includedir=C:/instantclient_12_2_32/sdk/include
 
+
     glib_genmarshal=glib-genmarshal
+    
     gobject_query=gobject-query
+    
     glib_mkenums=glib-mkenums
 
+
     Name: oci8
+    
     Description: oci8 library
+    
     Libs: -L${libdir} -loci
+    
     Cflags: -I${includedir}
+    
     Version: 12.2
 
 !!!! Need to complete the full description of setup !!!!
