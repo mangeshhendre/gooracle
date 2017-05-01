@@ -15,7 +15,7 @@ Connecting to Oracle
     
 3. Install TDM-GCC-32
     * http://tdm-gcc.tdragon.net/download (tdm-gcc-5.1.0-3.exe)
-    * Add C:\TDM-GCC-32\bin to the path environment variable
+    * Add C:\TDM-GCC-32\bin to the 'path' environment variable
     
 4. pkg-config setup
     * Create C:\pkg-config folder
@@ -29,7 +29,7 @@ Connecting to Oracle
       
     * Copy C:\pkg-config\glib_2.28.8-1_win32\bin\libglib-2.0-0.dll to C:\pkg-config\pkg-config_0.26-1_win32\bin
     * Copy C:\pkg-config\gettext-runtime_0.18.1.1-2_win32\bin\intl.dll to C:\pkg-config\pkg-config_0.26-1_win32\bin
-    * Add C:\pkg-config\pkg-config_0.26-1_win32\bin to the path environment variable
+    * Add C:\pkg-config\pkg-config_0.26-1_win32\bin to the 'path' environment variable
    
  5. Create the oci8.pc file
      * Add the oci8.pc file to C:\pkg-config\config
@@ -55,6 +55,3 @@ Install Oracle Driver
 ---------------------
     go get github.com/mattn/go-oci8
         
-    
-
-!!!! Need to complete the full description of setup !!!!
