@@ -11,7 +11,7 @@ Connecting to Oracle
     * Create folder C:\instantclient_12_2_32
     * Extract instant client basic to C:\instantclient_12_2_32
     * Extract instant client sdk to  C:\instantclient_12_2_32\sdk
-    * Add C:\instantclient_12_2_32 to the path environment variable
+    * Add C:\instantclient_12_2_32 to the 'path' environment variable
     
 3. Install TDM-GCC-32
     * http://tdm-gcc.tdragon.net/download (tdm-gcc-5.1.0-3.exe)
