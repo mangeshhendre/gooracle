@@ -1,69 +1,114 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 
-	_ "github.com/mattn/go-oci8"
+	_ "gopkg.in/rana/ora.v4"
+	ora "gopkg.in/rana/ora.v4"
 )
 
-// Oracle struct for database related information
-type Oracle struct {
-	db *sql.DB
-}
-
 func main() {
-	dsn := os.Getenv("GO_OCI8_CONNECT_STRING")
-	db, err := sql.Open("oci8", dsn)
+	env, srv, ses, err := createIntegrationSession()
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer db.Close()
-	oracle := &Oracle{}
-	oracle.db = db
+	defer env.Close()
+	defer srv.Close()
+	defer ses.Close()
 
-	err = oracle.getRecords()
+	err = getFunctionData(ses, "Get Bid")
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func (o *Oracle) getRecords() error {
-	packageName := "Test"
-	rows, err := o.db.Query("SELECT * FROM TABLE(INTG_PKG.GetP_packages_by_packagename(:1))", packageName)
+func createIntegrationSession() (*ora.Env, *ora.Srv, *ora.Ses, error) {
+	dsn := os.Getenv("GO_OCI8_INTG_CONNECT_STRING")
+	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
 	if err != nil {
-		return err
+		return nil, nil, nil, err
 	}
-	defer rows.Close()
 
-	columns, err := rows.Columns()
+	return env, srv, ses, nil
+}
+
+func createLibrarianSession() (*ora.Env, *ora.Srv, *ora.Ses, error) {
+	dsn := os.Getenv("GO_OCI8_LIB_CONNECT_STRING")
+	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return env, srv, ses, nil
+}
+
+func getCursorData(session *ora.Ses) error {
+	//Prepare the query
+	prepStatement, err := session.Prep("CALL CONTENTSERVICE.RETRIEVEDEPARTMENTS(:1)")
 	if err != nil {
 		return err
 	}
-	count := len(columns)
-	tableData := make([]map[string]interface{}, 0)
-	values := make([]interface{}, count)
-	valuePtrs := make([]interface{}, count)
-	for rows.Next() {
-		for i := 0; i < count; i++ {
-			valuePtrs[i] = &values[i]
-		}
-		rows.Scan(valuePtrs...)
-		entry := make(map[string]interface{})
-		for i, col := range columns {
-			var v interface{}
-			val := values[i]
-			b, ok := val.([]byte)
-			if ok {
-				v = string(b)
-			} else {
-				v = val
-			}
-			entry[col] = v
-		}
-		tableData = append(tableData, entry)
+	defer prepStatement.Close()
+
+	//Retrieve the resultSet
+	resultSet := &ora.Rset{}
+	rownum, err := prepStatement.Exe(resultSet)
+	if err != nil {
+		return err
 	}
-	fmt.Println(tableData)
+
+	//Trying to print the values retured from ref_cursor
+	fmt.Println("Cursor Test")
+	fmt.Println("Number of rows returned:", rownum)
+
+	//Print columns
+	for _, v := range resultSet.Columns {
+		fmt.Print(v.Name, " ")
+	}
+	fmt.Println()
+
+	//Print rows
+	for resultSet.Next() {
+		for k := range resultSet.Columns {
+			fmt.Print(resultSet.Row[k], " ")
+		}
+		fmt.Println()
+	}
+
+	return nil
+}
+
+func getFunctionData(session *ora.Ses, packageName string) error {
+	//Call sql function to get list of packages
+	prepStatement, err := session.Prep("SELECT * FROM TABLE(INTG_PKG.GetP_packages_by_packagename(:1))")
+	if err != nil {
+		return err
+	}
+	defer prepStatement.Close()
+
+	//Execute the function
+	rset, err := prepStatement.Qry(packageName)
+	if err != nil {
+		return err
+	}
+
+	//Print results
+	fmt.Println("Function Test")
+	fmt.Println("Number of rows returned:", len(rset.Row))
+
+	//Print columns
+	for _, v := range rset.Columns {
+		fmt.Print(v.Name, " ")
+	}
+	fmt.Println()
+
+	//Print rows
+	for rset.Next() {
+		for k := range rset.Columns {
+			fmt.Print(rset.Row[k], " ")
+		}
+		fmt.Println()
+	}
 	return nil
 }
