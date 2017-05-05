@@ -103,12 +103,15 @@ func getFunctionData(session *ora.Ses, packageName string) error {
 	}
 	fmt.Println()
 
-	//Print rows
-	for rset.Next() {
-		for k := range rset.Columns {
-			fmt.Print(rset.Row[k], " ")
+	if rset.IsOpen() {
+		//Print rows
+		for rset.Next() {
+			for k := range rset.Columns {
+				fmt.Print(rset.Row[k], " ")
+			}
+			fmt.Println()
 		}
-		fmt.Println()
 	}
+
 	return nil
 }
