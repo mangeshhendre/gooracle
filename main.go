@@ -9,115 +9,37 @@ import (
 )
 
 func main() {
-	env, srv, ses, err := createIntegrationSession()
+	dsn := os.Getenv("OCI8_TEST_CONNECT_STRING")
+	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	defer env.Close()
 	defer srv.Close()
 	defer ses.Close()
 
-	err = getFunctionData(ses, "Get Bid")
+	stmtProcCall, err := ses.Prep("CALL PROC1(:1)")
+	defer stmtProcCall.Close()
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
-}
-
-func createIntegrationSession() (*ora.Env, *ora.Srv, *ora.Ses, error) {
-	dsn := os.Getenv("GO_OCI8_INTG_CONNECT_STRING")
-	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
+	procRset := &ora.Rset{}
+	_, err = stmtProcCall.Exe(procRset)
 	if err != nil {
-		return nil, nil, nil, err
+		panic(err)
 	}
-
-	return env, srv, ses, nil
-}
-
-func createLibrarianSession() (*ora.Env, *ora.Srv, *ora.Ses, error) {
-	dsn := os.Getenv("GO_OCI8_LIB_CONNECT_STRING")
-	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return env, srv, ses, nil
-}
-
-func getCursorData(session *ora.Ses) error {
-	//Prepare the query
-	prepStatement, err := session.Prep("CALL CONTENTSERVICE.RETRIEVEDEPARTMENTS(:1)")
-	if err != nil {
-		return err
-	}
-	defer prepStatement.Close()
-
-	//Retrieve the resultSet
-	resultSet := &ora.Rset{}
-	_, err = prepStatement.Exe(resultSet)
-	if err != nil {
-		return err
-	}
-
-	//Trying to print the values retured from ref_cursor
-	fmt.Println("Cursor Test")
-	rowCount := 0
-	if resultSet.IsOpen() {
-		//Print columns
-		for _, v := range resultSet.Columns {
-			fmt.Print(v.Name, " ")
+	if procRset.IsOpen() {
+		fmt.Println("before looping through rows")
+		for procRset.Next() {
+			fmt.Println("rows")
+			fmt.Println(procRset.Row)
+			//fmt.Println(procRset)
 		}
-		fmt.Println()
-
-		//Print rows
-		for resultSet.Next() {
-			for k := range resultSet.Columns {
-				fmt.Print(resultSet.Row[k], " ")
-			}
-			rowCount++
-			fmt.Println()
+		fmt.Println("after looping through rows")
+		if err := procRset.Err(); err != nil {
+			panic(err)
 		}
-		fmt.Println("Number of rows returned:", rowCount)
-		//rset.Len() also doesn't seem to work nil pointer dereference
-		//fmt.Println("Number of rows returned:", resultSet.Len())
+		//fmt.Println(procRset.Len())
 	}
-
-	return nil
-}
-
-func getFunctionData(session *ora.Ses, packageName string) error {
-	//Call sql function to get list of packages
-	prepStatement, err := session.Prep("SELECT * FROM TABLE(INTG_PKG.GetP_packages_by_packagename(:1))")
-	if err != nil {
-		return err
-	}
-	defer prepStatement.Close()
-
-	//Execute the function
-	rset, err := prepStatement.Qry(packageName)
-	if err != nil {
-		return err
-	}
-
-	//Print results
-	fmt.Println("Function Test")
-	rowCount := 0
-	if rset.IsOpen() {
-
-		//Print columns
-		for _, v := range rset.Columns {
-			fmt.Print(v.Name, " ")
-		}
-		fmt.Println()
-		//Print rows
-		for rset.Next() {
-			for k := range rset.Columns {
-				fmt.Print(rset.Row[k], " ")
-			}
-			rowCount++
-			fmt.Println()
-		}
-		fmt.Println("Number of rows returned:", rowCount)
-	}
-
-	return nil
 }
