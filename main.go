@@ -53,27 +53,32 @@ func getCursorData(session *ora.Ses) error {
 
 	//Retrieve the resultSet
 	resultSet := &ora.Rset{}
-	rownum, err := prepStatement.Exe(resultSet)
+	_, err = prepStatement.Exe(resultSet)
 	if err != nil {
 		return err
 	}
 
 	//Trying to print the values retured from ref_cursor
 	fmt.Println("Cursor Test")
-	fmt.Println("Number of rows returned:", rownum)
-
-	//Print columns
-	for _, v := range resultSet.Columns {
-		fmt.Print(v.Name, " ")
-	}
-	fmt.Println()
-
-	//Print rows
-	for resultSet.Next() {
-		for k := range resultSet.Columns {
-			fmt.Print(resultSet.Row[k], " ")
+	rowCount := 0
+	if resultSet.IsOpen() {
+		//Print columns
+		for _, v := range resultSet.Columns {
+			fmt.Print(v.Name, " ")
 		}
 		fmt.Println()
+
+		//Print rows
+		for resultSet.Next() {
+			for k := range resultSet.Columns {
+				fmt.Print(resultSet.Row[k], " ")
+			}
+			rowCount++
+			fmt.Println()
+		}
+		fmt.Println("Number of rows returned:", rowCount)
+		//rset.Len() also doesn't seem to work nil pointer dereference
+		//fmt.Println("Number of rows returned:", resultSet.Len())
 	}
 
 	return nil
@@ -95,22 +100,23 @@ func getFunctionData(session *ora.Ses, packageName string) error {
 
 	//Print results
 	fmt.Println("Function Test")
-	fmt.Println("Number of rows returned:", len(rset.Row))
-
-	//Print columns
-	for _, v := range rset.Columns {
-		fmt.Print(v.Name, " ")
-	}
-	fmt.Println()
-
+	rowCount := 0
 	if rset.IsOpen() {
+
+		//Print columns
+		for _, v := range rset.Columns {
+			fmt.Print(v.Name, " ")
+		}
+		fmt.Println()
 		//Print rows
 		for rset.Next() {
 			for k := range rset.Columns {
 				fmt.Print(rset.Row[k], " ")
 			}
+			rowCount++
 			fmt.Println()
 		}
+		fmt.Println("Number of rows returned:", rowCount)
 	}
 
 	return nil
