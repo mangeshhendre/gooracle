@@ -53,5 +53,5 @@ Connecting to Oracle
     ```
 Install Oracle Driver
 ---------------------
-    go get gopkg.in/rana/ora.v48
+    go get gopkg.in/rana/ora.v4
         
