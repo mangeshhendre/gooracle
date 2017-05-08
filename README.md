@@ -53,5 +53,5 @@ Connecting to Oracle
     ```
 Install Oracle Driver
 ---------------------
-    go get github.com/mattn/go-oci8
+    go get gopkg.in/rana/ora.v48
         
