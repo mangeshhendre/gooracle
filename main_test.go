@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var cases = []struct {
+var functionCases = []struct {
 	packageName string
 	expectedErr error
 }{
@@ -15,31 +15,39 @@ var cases = []struct {
 	},
 }
 
-func TestGetFunctionData(t *testing.T) {
-	for _, c := range cases {
-		env, srv, ses, _ := createIntegrationSession()
+var cursorCases = []struct {
+	orderNumber int64
+	expectedErr error
+}{
+	{
+		orderNumber: int64(600016555),
+		expectedErr: nil,
+	},
+}
 
-		defer env.Close()
-		defer srv.Close()
-		defer ses.Close()
-
-		err := getFunctionData(ses, c.packageName)
+func TestGetFunctionDataPackages(t *testing.T) {
+	for _, c := range functionCases {
+		err := getFunctionDataPackages(c.packageName)
 		if !reflect.DeepEqual(err, c.expectedErr) {
 			t.Errorf("Expected err to be %q but it was %q", c.expectedErr, err)
 		}
 	}
 }
 
-func TestGetCursorData(t *testing.T) {
-	env, srv, ses, _ := createLibrarianSession()
+func TestGetCursorDataDepartments(t *testing.T) {
 
-	defer env.Close()
-	defer srv.Close()
-	defer ses.Close()
-
-	err := getCursorData(ses)
+	err := getCursorDataDepartments()
 	if err != nil {
 		t.Errorf("Expected err to be nil but it was %q", err)
 	}
 
+}
+
+func TestGetCursorDataImageDetails(t *testing.T) {
+	for _, c := range cursorCases {
+		err := getCursorDataImageDetails(c.orderNumber)
+		if !reflect.DeepEqual(err, c.expectedErr) {
+			t.Errorf("Expected err to be %q but it was %q", c.expectedErr, err)
+		}
+	}
 }

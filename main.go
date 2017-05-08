@@ -14,13 +14,18 @@ func main() {
 		fmt.Println(err)
 	}
 
-	err = getCursorDataImageDetails()
+	err = getCursorDataImageDetails(int64(600016555))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = getFunctionDataPackages("Get Bid")
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func getCursorDataImageDetails() error {
+func getCursorDataImageDetails(orderNumber int64) error {
 	dsn := os.Getenv("GO_OCI8_LIB_CONNECT_STRING")
 	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
 	if err != nil {
@@ -39,7 +44,7 @@ func getCursorDataImageDetails() error {
 
 	//Retrieve the resultSet
 	resultSet := &ora.Rset{}
-	_, err = prepStatement.Exe(int64(600016555), resultSet)
+	_, err = prepStatement.Exe(orderNumber, resultSet)
 	if err != nil {
 		return err
 	}
@@ -112,7 +117,7 @@ func getCursorDataDepartments() error {
 	return nil
 }
 
-func getFunctionData(session *ora.Ses, packageName string) error {
+func getFunctionDataPackages(packageName string) error {
 	dsn := os.Getenv("GO_OCI8_INTG_CONNECT_STRING")
 	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
 	if err != nil {
@@ -123,7 +128,7 @@ func getFunctionData(session *ora.Ses, packageName string) error {
 	defer srv.Close()
 	defer ses.Close()
 	//Call sql function to get list of packages
-	prepStatement, err := session.Prep("SELECT * FROM TABLE(INTG_PKG.GetP_packages_by_packagename(:1))")
+	prepStatement, err := ses.Prep("SELECT * FROM TABLE(INTG_PKG.GetP_packages_by_packagename(:1))")
 	if err != nil {
 		return err
 	}
