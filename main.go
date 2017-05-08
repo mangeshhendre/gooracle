@@ -9,43 +9,29 @@ import (
 )
 
 func main() {
-	env, srv, ses, err := createIntegrationSession()
+	err := getCursorDataDepartments()
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer env.Close()
-	defer srv.Close()
-	defer ses.Close()
 
-	err = getFunctionData(ses, "Get Bid")
+	err = getCursorDataImageDetails()
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func createIntegrationSession() (*ora.Env, *ora.Srv, *ora.Ses, error) {
-	dsn := os.Getenv("GO_OCI8_INTG_CONNECT_STRING")
-	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return env, srv, ses, nil
-}
-
-func createLibrarianSession() (*ora.Env, *ora.Srv, *ora.Ses, error) {
+func getCursorDataImageDetails() error {
 	dsn := os.Getenv("GO_OCI8_LIB_CONNECT_STRING")
 	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
 	if err != nil {
-		return nil, nil, nil, err
+		fmt.Println(err)
 	}
 
-	return env, srv, ses, nil
-}
-
-func getCursorData(session *ora.Ses) error {
+	defer env.Close()
+	defer srv.Close()
+	defer ses.Close()
 	//Prepare the query
-	prepStatement, err := session.Prep("CALL CONTENTSERVICE.RETRIEVEDEPARTMENTS(:1)")
+	prepStatement, err := ses.Prep("CALL CONTENTSERVICE.RETRIEVEIMAGEDETAILLIST(:1,:2)")
 	if err != nil {
 		return err
 	}
@@ -53,14 +39,13 @@ func getCursorData(session *ora.Ses) error {
 
 	//Retrieve the resultSet
 	resultSet := &ora.Rset{}
-	_, err = prepStatement.Exe(resultSet)
+	_, err = prepStatement.Exe(int64(600016555), resultSet)
 	if err != nil {
 		return err
 	}
 
 	//Trying to print the values retured from ref_cursor
 	fmt.Println("Cursor Test")
-	rowCount := 0
 	if resultSet.IsOpen() {
 		//Print columns
 		for _, v := range resultSet.Columns {
@@ -73,18 +58,70 @@ func getCursorData(session *ora.Ses) error {
 			for k := range resultSet.Columns {
 				fmt.Print(resultSet.Row[k], " ")
 			}
-			rowCount++
 			fmt.Println()
 		}
-		fmt.Println("Number of rows returned:", rowCount)
-		//rset.Len() also doesn't seem to work nil pointer dereference
-		//fmt.Println("Number of rows returned:", resultSet.Len())
+		fmt.Println("Number of rows returned:", resultSet.Len())
+	}
+
+	return nil
+}
+
+func getCursorDataDepartments() error {
+	dsn := os.Getenv("GO_OCI8_LIB_CONNECT_STRING")
+	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer env.Close()
+	defer srv.Close()
+	defer ses.Close()
+	//Prepare the query
+	prepStatement, err := ses.Prep("CALL CONTENTSERVICE.RETRIEVEDEPARTMENTS(:1)")
+	if err != nil {
+		return err
+	}
+	defer prepStatement.Close()
+
+	//Retrieve the resultSet
+	resultSet := &ora.Rset{}
+	rowsEffected, err := prepStatement.Exe(resultSet)
+	if err != nil {
+		return err
+	}
+	fmt.Println("rowsEffected", rowsEffected)
+	//Trying to print the values retured from ref_cursor
+	fmt.Println("Cursor Test")
+	if resultSet.IsOpen() {
+		//Print columns
+		for _, v := range resultSet.Columns {
+			fmt.Print(v.Name, " ")
+		}
+		fmt.Println()
+
+		//Print rows
+		for resultSet.Next() {
+			for k := range resultSet.Columns {
+				fmt.Print(resultSet.Row[k], " ")
+			}
+			fmt.Println()
+		}
+		fmt.Println("Number of rows returned:", resultSet.Len())
 	}
 
 	return nil
 }
 
 func getFunctionData(session *ora.Ses, packageName string) error {
+	dsn := os.Getenv("GO_OCI8_INTG_CONNECT_STRING")
+	env, srv, ses, err := ora.NewEnvSrvSes(dsn)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer env.Close()
+	defer srv.Close()
+	defer ses.Close()
 	//Call sql function to get list of packages
 	prepStatement, err := session.Prep("SELECT * FROM TABLE(INTG_PKG.GetP_packages_by_packagename(:1))")
 	if err != nil {
@@ -100,7 +137,6 @@ func getFunctionData(session *ora.Ses, packageName string) error {
 
 	//Print results
 	fmt.Println("Function Test")
-	rowCount := 0
 	if rset.IsOpen() {
 
 		//Print columns
@@ -113,10 +149,9 @@ func getFunctionData(session *ora.Ses, packageName string) error {
 			for k := range rset.Columns {
 				fmt.Print(rset.Row[k], " ")
 			}
-			rowCount++
 			fmt.Println()
 		}
-		fmt.Println("Number of rows returned:", rowCount)
+		fmt.Println("Number of rows returned:", rset.Len())
 	}
 
 	return nil
